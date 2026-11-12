@@ -23,21 +23,21 @@
             touch-action: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            box-shadow: 0px 5px 0px rgba(0, 0, 0, 0.4);
+            box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.4);
             transition: transform 0.05s ease, box-shadow 0.05s ease;
             position: absolute;
             cursor: pointer;
         }
         .btn-touch:active {
-            transform: translateY(3px);
-            box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.4);
+            transform: translateY(2px);
+            box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
         }
         .ult-ready {
             animation: pulse-glow 0.8s infinite alternate;
         }
         @keyframes pulse-glow {
-            from { box-shadow: 0 0 12px #00ffff, 0 0 25px #00ffff; }
-            to { box-shadow: 0 0 25px #00ffff, 0 0 45px #ff00ff; }
+            from { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; }
+            to { box-shadow: 0 0 20px #00ffff, 0 0 35px #ff00ff; }
         }
         .edit-mode-active {
             border: 2px dashed #f59e0b !important;
@@ -46,28 +46,28 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-white h-screen w-screen flex flex-col justify-between items-center p-1 sm:p-2 overflow-hidden select-none">
+<body class="bg-slate-950 text-white h-screen w-screen flex flex-col justify-between items-center p-1 overflow-hidden select-none">
 
     <!-- LOBBY SCREEN -->
     <div id="lobby-screen" class="absolute inset-0 bg-slate-950/98 flex flex-col items-center justify-center p-3 text-center z-50">
-        <div class="bg-slate-900 border-4 border-amber-500/80 p-5 sm:p-7 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col gap-3.5">
-            <h1 class="text-2xl sm:text-3xl font-black text-amber-400 tracking-wider text-stroke-2">🐓 ROOSTER ARENA 🐓</h1>
-            <p class="text-[11px] sm:text-xs text-slate-300">เลือดอึด 1000 HP! กระโดดกางปีกโจมตี และสะสมเกจ SP ปลดล็อกไม้ตายเดือยทองเพลิง!</p>
+        <div class="bg-slate-900 border-4 border-amber-500/80 p-5 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col gap-3">
+            <h1 class="text-2xl font-black text-amber-400 tracking-wider text-stroke-2">🐓 ROOSTER ARENA 🐓</h1>
+            <p class="text-[11px] text-slate-300">เลือดอึด 1000 HP! กระโดดกางปีกโจมตี และสะสมเกจ SP ปลดล็อกไม้ตายเดือยทองเพลิง!</p>
 
             <div class="flex gap-2 justify-center">
-                <button id="btn-mode-online" onclick="setGameMode('online')" class="px-3.5 py-2 bg-red-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105">
+                <button id="btn-mode-online" onclick="setGameMode('online')" class="px-3 py-1.5 bg-red-600 text-white font-black text-xs rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105">
                     🌐 ออนไลน์
                 </button>
-                <button id="btn-mode-pve" onclick="setGameMode('pve')" class="px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer">
+                <button id="btn-mode-pve" onclick="setGameMode('pve')" class="px-3 py-1.5 bg-slate-800 text-slate-400 font-black text-xs rounded-xl border-2 border-slate-700 shadow cursor-pointer">
                     🤖 เล่นกับบอท
                 </button>
             </div>
 
             <div id="room-input-container" class="flex flex-col gap-1">
-                <input type="text" id="room-input" placeholder="ใส่รหัสห้อง (เช่น room123)" class="bg-slate-950 border-2 border-amber-600/50 rounded-xl px-3 py-2.5 text-center text-sm sm:text-base font-bold text-amber-300 focus:outline-none focus:border-amber-400 shadow-inner">
+                <input type="text" id="room-input" placeholder="ใส่รหัสห้อง (เช่น room123)" class="bg-slate-950 border-2 border-amber-600/50 rounded-xl px-3 py-2 text-center text-sm font-bold text-amber-300 focus:outline-none focus:border-amber-400 shadow-inner">
             </div>
 
-            <div id="bot-difficulty-container" class="flex flex-col items-center gap-1 hidden bg-slate-950 p-2.5 rounded-xl border border-indigo-500/40">
+            <div id="bot-difficulty-container" class="flex flex-col items-center gap-1 hidden bg-slate-950 p-2 rounded-xl border border-indigo-500/40">
                 <span class="text-[10px] font-bold text-indigo-300">เลือกระดับความยาก AI:</span>
                 <div class="flex gap-2">
                     <button id="diff-easy" onclick="setDifficulty('easy')" class="px-2.5 py-1 bg-emerald-600 text-white font-black text-[11px] rounded-lg border border-white cursor-pointer shadow">🟢 ง่าย</button>
@@ -76,95 +76,93 @@
                 </div>
             </div>
 
-            <button onclick="startMatch()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-red-600 text-white font-black text-base sm:text-lg rounded-2xl border-2 border-yellow-300 shadow-xl active:scale-95 transition-transform cursor-pointer">
+            <button onclick="startMatch()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-red-600 text-white font-black text-base rounded-2xl border-2 border-yellow-300 shadow-xl active:scale-95 transition-transform cursor-pointer">
                 ⚔️ เข้าสู่สนามประลอง ⚔️
             </button>
         </div>
     </div>
 
     <!-- TOP HUD -->
-    <div class="w-full max-w-4xl bg-slate-900/90 rounded-2xl border-2 border-amber-500/50 p-2 flex justify-between items-center shadow-lg z-10 gap-1.5">
+    <div class="w-full max-w-4xl bg-slate-900/90 rounded-xl border-2 border-amber-500/50 p-1.5 flex justify-between items-center shadow-lg z-10 gap-1">
         <div class="flex-1 max-w-[42%] flex flex-col items-start gap-0.5">
-            <div class="flex justify-between w-full items-center text-[11px] sm:text-xs">
+            <div class="flex justify-between w-full items-center text-[10px]">
                 <span id="p1-label-hud" class="text-red-400 font-black text-stroke-1">🔴 P1 (ไก่แดง)</span>
                 <span id="p1-combo" class="text-yellow-400 font-extrabold italic opacity-0 transition-opacity">COMBO x0</span>
             </div>
-            <div class="w-full h-4 sm:h-5 bg-slate-950 rounded-full border-2 border-red-500 overflow-hidden relative">
+            <div class="w-full h-3.5 bg-slate-950 rounded-full border-2 border-red-500 overflow-hidden relative">
                 <div id="p1-hp" class="h-full bg-gradient-to-r from-red-600 to-amber-500 transition-all duration-75 w-full"></div>
-                <span id="p1-hp-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-stroke-1">1000 / 1000</span>
+                <span id="p1-hp-text" class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-white text-stroke-1">1000 / 1000</span>
             </div>
-            <div class="w-full h-2.5 bg-slate-950 rounded-full border border-cyan-500/50 overflow-hidden relative shadow-inner">
+            <div class="w-full h-2 bg-slate-950 rounded-full border border-cyan-500/50 overflow-hidden relative shadow-inner">
                 <div id="p1-sp" class="h-full bg-gradient-to-r from-cyan-500 to-blue-400 transition-all duration-100 w-0"></div>
-                <span id="p1-sp-text" class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white text-stroke-1">SP 0%</span>
+                <span id="p1-sp-text" class="absolute inset-0 flex items-center justify-center text-[7px] font-black text-white text-stroke-1">SP 0%</span>
             </div>
         </div>
 
-        <div class="flex flex-col items-center justify-center min-w-[60px] gap-0.5">
-            <div id="timer" class="text-lg sm:text-2xl font-black text-amber-400 bg-slate-950 px-2.5 py-0.5 rounded-xl border-2 border-amber-500 text-stroke-1 shadow-inner">60</div>
-            <button id="btn-ingame-home" onclick="returnToHome()" class="px-2 py-0.5 bg-slate-800 text-amber-400 font-bold text-[9px] rounded-lg border border-amber-500/50 cursor-pointer shadow">🏠 หน้าหลัก</button>
+        <div class="flex flex-col items-center justify-center min-w-[50px] gap-0.5">
+            <div id="timer" class="text-base font-black text-amber-400 bg-slate-950 px-2 py-0.5 rounded-lg border-2 border-amber-500 text-stroke-1 shadow-inner">60</div>
+            <button id="btn-ingame-home" onclick="returnToHome()" class="px-1.5 py-0.2 bg-slate-800 text-amber-400 font-bold text-[8px] rounded border border-amber-500/50 cursor-pointer shadow">🏠 หน้าหลัก</button>
         </div>
 
         <div class="flex-1 max-w-[42%] flex flex-col items-end gap-0.5">
-            <div class="flex justify-between w-full items-center text-[11px] sm:text-xs">
+            <div class="flex justify-between w-full items-center text-[10px]">
                 <span id="p2-combo" class="text-yellow-400 font-extrabold italic opacity-0 transition-opacity">COMBO x0</span>
                 <span id="p2-label-hud" class="text-blue-400 font-black text-stroke-1">🔵 P2 (ไก่ฟ้า)</span>
             </div>
-            <div class="w-full h-4 sm:h-5 bg-slate-950 rounded-full border-2 border-blue-500 overflow-hidden relative flex justify-end">
+            <div class="w-full h-3.5 bg-slate-950 rounded-full border-2 border-blue-500 overflow-hidden relative flex justify-end">
                 <div id="p2-hp" class="h-full bg-gradient-to-l from-blue-600 to-cyan-400 transition-all duration-75 w-full"></div>
-                <span id="p2-hp-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-stroke-1">1000 / 1000</span>
+                <span id="p2-hp-text" class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-white text-stroke-1">1000 / 1000</span>
             </div>
-            <div class="w-full h-2.5 bg-slate-950 rounded-full border border-yellow-500/50 overflow-hidden relative flex justify-end shadow-inner">
+            <div class="w-full h-2 bg-slate-950 rounded-full border border-yellow-500/50 overflow-hidden relative flex justify-end shadow-inner">
                 <div id="p2-sp" class="h-full bg-gradient-to-l from-yellow-400 to-amber-500 transition-all duration-100 w-0"></div>
-                <span id="p2-sp-text" class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white text-stroke-1">SP 0%</span>
+                <span id="p2-sp-text" class="absolute inset-0 flex items-center justify-center text-[7px] font-black text-white text-stroke-1">SP 0%</span>
             </div>
         </div>
     </div>
 
     <!-- CANVAS & OVERLAYS -->
-    <div class="relative w-full max-w-4xl flex-1 my-1 bg-slate-900 rounded-2xl border-2 sm:border-4 border-amber-600/80 overflow-hidden shadow-2xl flex items-center justify-center min-h-[170px] max-h-[310px]">
+    <div class="relative w-full max-w-4xl flex-1 my-1 bg-slate-900 rounded-xl border-2 border-amber-600/80 overflow-hidden shadow-2xl flex items-center justify-center min-h-[160px] max-h-[300px]">
         <canvas id="gameCanvas" width="1024" height="576" class="w-full h-full object-contain"></canvas>
 
         <div id="waiting-overlay" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-3 text-center z-40 hidden">
-            <h2 class="text-2xl sm:text-4xl font-black text-amber-400 mb-2 animate-pulse text-stroke-2">⏳ กำลังรอเพื่อนเข้าห้อง...</h2>
-            <p id="room-code-display" class="text-xs sm:text-base text-slate-300 mb-4 font-semibold">รหัสห้องของคุณ: -</p>
-            <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <button onclick="returnToHome()" class="px-5 py-2 bg-red-600 text-white font-bold text-xs rounded-xl shadow cursor-pointer">ยกเลิกห้อง</button>
+            <h2 class="text-2xl font-black text-amber-400 mb-2 animate-pulse text-stroke-2">⏳ กำลังรอเพื่อนเข้าห้อง...</h2>
+            <p id="room-code-display" class="text-xs text-slate-300 mb-3 font-semibold">รหัสห้องของคุณ: -</p>
+            <div class="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <button onclick="returnToHome()" class="px-4 py-1.5 bg-red-600 text-white font-bold text-xs rounded-xl shadow cursor-pointer">ยกเลิกห้อง</button>
         </div>
 
         <div id="countdown-overlay" class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center p-3 text-center z-40 hidden">
-            <h2 id="countdown-text" class="text-6xl sm:text-9xl font-black text-amber-400 animate-bounce text-stroke-2">3</h2>
-            <p class="text-lg sm:text-2xl text-white font-bold mt-2 text-stroke-1">เตรียมตัวประลองพร้อมกัน!</p>
+            <h2 id="countdown-text" class="text-6xl font-black text-amber-400 animate-bounce text-stroke-2">3</h2>
+            <p class="text-base text-white font-bold mt-1 text-stroke-1">เตรียมตัวประลองพร้อมกัน!</p>
         </div>
 
-        <!-- กล่องสรุปผลมุมขวาบน ขนาดกะทัดรัด ไม่บังตัวละคร -->
-        <div id="gameover-overlay" class="absolute top-2 right-2 bg-slate-950/85 border-2 border-amber-500/80 rounded-xl p-2.5 flex flex-col items-center text-center z-30 shadow-2xl hidden max-w-[190px]">
-            <h2 id="winner-text" class="text-base font-black text-amber-400 mb-0.5 text-stroke-1">WINNER!</h2>
-            <p id="winner-sub" class="text-[9px] text-slate-200 mb-2 font-semibold">สุดยอดฝีมือครองแชมป์!</p>
-            <button onclick="returnToHome()" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white font-black text-[11px] rounded-lg border border-white shadow cursor-pointer">🏠 หน้า Lobby</button>
+        <div id="gameover-overlay" class="absolute top-2 right-2 bg-slate-950/85 border-2 border-amber-500/80 rounded-xl p-2 flex flex-col items-center text-center z-30 shadow-2xl hidden max-w-[180px]">
+            <h2 id="winner-text" class="text-sm font-black text-amber-400 mb-0.5 text-stroke-1">WINNER!</h2>
+            <p id="winner-sub" class="text-[8px] text-slate-200 mb-1.5 font-semibold">สุดยอดฝีมือครองแชมป์!</p>
+            <button onclick="returnToHome()" class="px-2.5 py-0.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-[10px] rounded-lg border border-white shadow cursor-pointer">🏠 หน้า Lobby</button>
         </div>
     </div>
 
-    <!-- CUSTOMIZABLE FREEDOM GAMEPAD PANEL -->
-    <div id="touch-panel" class="w-full max-w-4xl h-36 sm:h-44 bg-slate-900/95 rounded-3xl border-3 border-amber-600/70 shadow-2xl mb-1 relative overflow-hidden">
-        <div id="my-role-badge" class="absolute top-1 left-1/2 transform -translate-x-1/2 bg-amber-500 text-slate-950 px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white z-20">
+    <!-- COMPACT & LIFTED FREEDOM GAMEPAD PANEL -->
+    <div id="touch-panel" class="w-full max-w-4xl h-28 sm:h-32 bg-slate-900/95 rounded-2xl border-2 border-amber-600/70 shadow-2xl mb-1 relative overflow-hidden">
+        <div id="my-role-badge" class="absolute top-0.5 left-1/2 transform -translate-x-1/2 bg-amber-500 text-slate-950 px-2.5 py-0.1 rounded-full font-black text-[9px] shadow-md border border-white z-20">
             🎮 กำลังเชื่อมต่อ...
         </div>
 
-        <!-- ปุ่มเปิด/ปิดโหมดจัดวางตำแหน่งปุ่มอิสระ -->
-        <button onclick="toggleEditMode()" id="edit-mode-btn" class="absolute top-1 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow">
+        <button onclick="toggleEditMode()" id="edit-mode-btn" class="absolute top-0.5 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2 py-0.2 rounded-md text-[9px] font-black z-35 cursor-pointer shadow">
             ⚙️ จัดวางปุ่ม
         </button>
 
-        <!-- D-PAD / DIRECTION BUTTONS -->
-        <button id="btn-left" class="btn-touch bg-slate-800 active:bg-slate-700 text-2xl font-black rounded-xl border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-16 h-16" style="left: 15px; bottom: 20px;">◀</button>
-        <button id="btn-right" class="btn-touch bg-slate-800 active:bg-slate-700 text-2xl font-black rounded-xl border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-16 h-16" style="left: 115px; bottom: 20px;">▶</button>
-        <button id="btn-jump" class="btn-touch bg-amber-600 active:bg-amber-500 text-xl font-black rounded-xl border-2 border-yellow-300 text-white flex items-center justify-center shadow w-16 h-16" style="left: 65px; bottom: 85px;">▲</button>
-        <button id="btn-block" class="btn-touch bg-slate-700 active:bg-slate-600 text-lg font-black rounded-xl border-2 border-slate-400 text-white flex items-center justify-center shadow w-16 h-16" style="left: 65px; bottom: 20px;">🛡️</button>
+        <!-- D-PAD (ย่อขนาดลงและขยับขึ้น ไม่ให้ตกขอบ) -->
+        <button id="btn-left" class="btn-touch bg-slate-800 active:bg-slate-700 text-xl font-black rounded-lg border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-12 h-12" style="left: 12px; bottom: 12px;">◀</button>
+        <button id="btn-right" class="btn-touch bg-slate-800 active:bg-slate-700 text-xl font-black rounded-lg border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-12 h-12" style="left: 88px; bottom: 12px;">▶</button>
+        <button id="btn-jump" class="btn-touch bg-amber-600 active:bg-amber-500 text-lg font-black rounded-lg border-2 border-yellow-300 text-white flex items-center justify-center shadow w-12 h-12" style="left: 50px; bottom: 64px;">▲</button>
+        <button id="btn-block" class="btn-touch bg-slate-700 active:bg-slate-600 text-sm font-black rounded-lg border-2 border-slate-400 text-white flex items-center justify-center shadow w-12 h-12" style="left: 50px; bottom: 12px;">🛡️</button>
 
-        <!-- ACTION BUTTONS A, B, C -->
-        <button id="btn-alt-jump" class="btn-touch bg-emerald-600 active:bg-emerald-500 text-xl font-black rounded-full border-3 border-emerald-300 text-white flex items-center justify-center shadow-lg w-20 h-20" style="right: 170px; bottom: 65px;">A</button>
-        <button id="btn-atk" class="btn-touch bg-red-600 active:bg-red-500 text-2xl font-black rounded-full border-4 border-yellow-300 text-white flex items-center justify-center shadow-2xl w-20 h-20" style="right: 90px; bottom: 15px;">B</button>
-        <button id="btn-ult" class="btn-touch bg-slate-800 text-base font-black rounded-full border-3 border-slate-600 text-slate-400 flex items-center justify-center shadow-xl opacity-60 pointer-events-none transition-all w-20 h-20" style="right: 10px; bottom: 65px;">C</button>
+        <!-- ACTION BUTTONS A, B, C (ย่อขนาดและยกขึ้นพอดีมือ) -->
+        <button id="btn-alt-jump" class="btn-touch bg-emerald-600 active:bg-emerald-500 text-base font-black rounded-full border-2 border-emerald-300 text-white flex items-center justify-center shadow-lg w-14 h-14" style="right: 130px; bottom: 42px;">A</button>
+        <button id="btn-atk" class="btn-touch bg-red-600 active:bg-red-500 text-xl font-black rounded-full border-3 border-yellow-300 text-white flex items-center justify-center shadow-2xl w-16 h-16" style="right: 70px; bottom: 8px;">B</button>
+        <button id="btn-ult" class="btn-touch bg-slate-800 text-sm font-black rounded-full border-2 border-slate-600 text-slate-400 flex items-center justify-center shadow-xl opacity-60 pointer-events-none transition-all w-14 h-14" style="right: 10px; bottom: 42px;">C</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -186,13 +184,13 @@
             const botDiffC = document.getElementById('bot-difficulty-container');
 
             if (mode === 'online') {
-                onlineBtn.className = "px-3.5 py-2 bg-red-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
-                pveBtn.className = "px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer";
+                onlineBtn.className = "px-3 py-1.5 bg-red-600 text-white font-black text-xs rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
+                pveBtn.className = "px-3 py-1.5 bg-slate-800 text-slate-400 font-black text-xs rounded-xl border-2 border-slate-700 shadow cursor-pointer";
                 roomInputC.classList.remove('hidden');
                 botDiffC.classList.add('hidden');
             } else {
-                pveBtn.className = "px-3.5 py-2 bg-indigo-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
-                onlineBtn.className = "px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer";
+                pveBtn.className = "px-3 py-1.5 bg-indigo-600 text-white font-black text-xs rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
+                onlineBtn.className = "px-3 py-1.5 bg-slate-800 text-slate-400 font-black text-xs rounded-xl border-2 border-slate-700 shadow cursor-pointer";
                 roomInputC.classList.add('hidden');
                 botDiffC.classList.remove('hidden');
             }
@@ -238,11 +236,11 @@
 
             if (isEditMode) {
                 btn.innerText = "💾 บันทึกตำแหน่ง";
-                btn.className = "absolute top-1 right-2 bg-amber-600 text-white border border-white px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow animate-pulse";
+                btn.className = "absolute top-0.5 right-2 bg-amber-600 text-white border border-white px-2 py-0.2 rounded-md text-[9px] font-black z-35 cursor-pointer shadow animate-pulse";
                 ultBtn.classList.remove('pointer-events-none', 'opacity-60');
             } else {
                 btn.innerText = "⚙️ จัดวางปุ่ม";
-                btn.className = "absolute top-1 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow";
+                btn.className = "absolute top-0.5 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2 py-0.2 rounded-md text-[9px] font-black z-35 cursor-pointer shadow";
                 saveButtonPositions();
             }
         }
@@ -978,10 +976,10 @@
             const badge = document.getElementById('my-role-badge');
             if (myRole === 'p1') {
                 badge.innerText = "🎮 คุณคือ P1 (ไก่แดง)";
-                badge.className = "absolute top-1 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white animate-pulse z-20";
+                badge.className = "absolute top-0.5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-2.5 py-0.1 rounded-full font-black text-[9px] shadow-md border border-white animate-pulse z-20";
             } else {
                 badge.innerText = "🎮 คุณคือ P2 (ไก่ฟ้า)";
-                badge.className = "absolute top-1 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white animate-pulse z-20";
+                badge.className = "absolute top-0.5 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-2.5 py-0.1 rounded-full font-black text-[9px] shadow-md border border-white animate-pulse z-20";
             }
         });
 
