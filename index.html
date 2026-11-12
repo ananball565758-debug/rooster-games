@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rooster Fight Arena - 1000 HP Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow: hidden;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+        }
+        .text-stroke-2 { -webkit-text-stroke: 2px #000; }
+        .text-stroke-1 { -webkit-text-stroke: 1px #000; }
+        .btn-touch {
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0px 5px 0px rgba(0, 0, 0, 0.4);
+            transition: transform 0.05s ease, box-shadow 0.05s ease;
+            position: absolute;
+            cursor: pointer;
+        }
+        .btn-touch:active {
+            transform: translateY(3px);
+            box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.4);
+        }
+        .ult-ready {
+            animation: pulse-glow 0.8s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 12px #00ffff, 0 0 25px #00ffff; }
+            to { box-shadow: 0 0 25px #00ffff, 0 0 45px #ff00ff; }
+        }
+        .edit-mode-active {
+            border: 2px dashed #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.2) !important;
+            pointer-events: auto !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-white h-screen w-screen flex flex-col justify-between items-center p-1 sm:p-2 overflow-hidden select-none">
+
+    <!-- LOBBY SCREEN -->
+    <div id="lobby-screen" class="absolute inset-0 bg-slate-950/98 flex flex-col items-center justify-center p-3 text-center z-50">
+        <div class="bg-slate-900 border-4 border-amber-500/80 p-5 sm:p-7 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col gap-3.5">
+            <h1 class="text-2xl sm:text-3xl font-black text-amber-400 tracking-wider text-stroke-2">🐓 ROOSTER ARENA 🐓</h1>
+            <p class="text-[11px] sm:text-xs text-slate-300">เลือดอึด 1000 HP! กระโดดกางปีกโจมตี และสะสมเกจ SP ปลดล็อกไม้ตายเดือยทองเพลิง!</p>
+
+            <div class="flex gap-2 justify-center">
+                <button id="btn-mode-online" onclick="setGameMode('online')" class="px-3.5 py-2 bg-red-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105">
+                    🌐 ออนไลน์
+                </button>
+                <button id="btn-mode-pve" onclick="setGameMode('pve')" class="px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer">
+                    🤖 เล่นกับบอท
+                </button>
+            </div>
+
+            <div id="room-input-container" class="flex flex-col gap-1">
+                <input type="text" id="room-input" placeholder="ใส่รหัสห้อง (เช่น room123)" class="bg-slate-950 border-2 border-amber-600/50 rounded-xl px-3 py-2.5 text-center text-sm sm:text-base font-bold text-amber-300 focus:outline-none focus:border-amber-400 shadow-inner">
+            </div>
+
+            <div id="bot-difficulty-container" class="flex flex-col items-center gap-1 hidden bg-slate-950 p-2.5 rounded-xl border border-indigo-500/40">
+                <span class="text-[10px] font-bold text-indigo-300">เลือกระดับความยาก AI:</span>
+                <div class="flex gap-2">
+                    <button id="diff-easy" onclick="setDifficulty('easy')" class="px-2.5 py-1 bg-emerald-600 text-white font-black text-[11px] rounded-lg border border-white cursor-pointer shadow">🟢 ง่าย</button>
+                    <button id="diff-normal" onclick="setDifficulty('normal')" class="px-2.5 py-1 bg-amber-600 text-white font-black text-[11px] rounded-lg border border-white cursor-pointer shadow opacity-60">🟡 กลาง</button>
+                    <button id="diff-hard" onclick="setDifficulty('hard')" class="px-2.5 py-1 bg-rose-600 text-white font-black text-[11px] rounded-lg border border-white cursor-pointer shadow opacity-60">🔴 ยาก</button>
+                </div>
+            </div>
+
+            <button onclick="startMatch()" class="px-6 py-3 bg-gradient-to-r from-amber-500 to-red-600 text-white font-black text-base sm:text-lg rounded-2xl border-2 border-yellow-300 shadow-xl active:scale-95 transition-transform cursor-pointer">
+                ⚔️ เข้าสู่สนามประลอง ⚔️
+            </button>
+        </div>
+    </div>
+
+    <!-- TOP HUD -->
+    <div class="w-full max-w-4xl bg-slate-900/90 rounded-2xl border-2 border-amber-500/50 p-2 flex justify-between items-center shadow-lg z-10 gap-1.5">
+        <div class="flex-1 max-w-[42%] flex flex-col items-start gap-0.5">
+            <div class="flex justify-between w-full items-center text-[11px] sm:text-xs">
+                <span id="p1-label-hud" class="text-red-400 font-black text-stroke-1">🔴 P1 (ไก่แดง)</span>
+                <span id="p1-combo" class="text-yellow-400 font-extrabold italic opacity-0 transition-opacity">COMBO x0</span>
+            </div>
+            <div class="w-full h-4 sm:h-5 bg-slate-950 rounded-full border-2 border-red-500 overflow-hidden relative">
+                <div id="p1-hp" class="h-full bg-gradient-to-r from-red-600 to-amber-500 transition-all duration-75 w-full"></div>
+                <span id="p1-hp-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-stroke-1">1000 / 1000</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full border border-cyan-500/50 overflow-hidden relative shadow-inner">
+                <div id="p1-sp" class="h-full bg-gradient-to-r from-cyan-500 to-blue-400 transition-all duration-100 w-0"></div>
+                <span id="p1-sp-text" class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white text-stroke-1">SP 0%</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center min-w-[60px] gap-0.5">
+            <div id="timer" class="text-lg sm:text-2xl font-black text-amber-400 bg-slate-950 px-2.5 py-0.5 rounded-xl border-2 border-amber-500 text-stroke-1 shadow-inner">60</div>
+            <button id="btn-ingame-home" onclick="returnToHome()" class="px-2 py-0.5 bg-slate-800 text-amber-400 font-bold text-[9px] rounded-lg border border-amber-500/50 cursor-pointer shadow">🏠 หน้าหลัก</button>
+        </div>
+
+        <div class="flex-1 max-w-[42%] flex flex-col items-end gap-0.5">
+            <div class="flex justify-between w-full items-center text-[11px] sm:text-xs">
+                <span id="p2-combo" class="text-yellow-400 font-extrabold italic opacity-0 transition-opacity">COMBO x0</span>
+                <span id="p2-label-hud" class="text-blue-400 font-black text-stroke-1">🔵 P2 (ไก่ฟ้า)</span>
+            </div>
+            <div class="w-full h-4 sm:h-5 bg-slate-950 rounded-full border-2 border-blue-500 overflow-hidden relative flex justify-end">
+                <div id="p2-hp" class="h-full bg-gradient-to-l from-blue-600 to-cyan-400 transition-all duration-75 w-full"></div>
+                <span id="p2-hp-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white text-stroke-1">1000 / 1000</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full border border-yellow-500/50 overflow-hidden relative flex justify-end shadow-inner">
+                <div id="p2-sp" class="h-full bg-gradient-to-l from-yellow-400 to-amber-500 transition-all duration-100 w-0"></div>
+                <span id="p2-sp-text" class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white text-stroke-1">SP 0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CANVAS & OVERLAYS -->
+    <div class="relative w-full max-w-4xl flex-1 my-1 bg-slate-900 rounded-2xl border-2 sm:border-4 border-amber-600/80 overflow-hidden shadow-2xl flex items-center justify-center min-h-[170px] max-h-[310px]">
+        <canvas id="gameCanvas" width="1024" height="576" class="w-full h-full object-contain"></canvas>
+
+        <div id="waiting-overlay" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-3 text-center z-40 hidden">
+            <h2 class="text-2xl sm:text-4xl font-black text-amber-400 mb-2 animate-pulse text-stroke-2">⏳ กำลังรอเพื่อนเข้าห้อง...</h2>
+            <p id="room-code-display" class="text-xs sm:text-base text-slate-300 mb-4 font-semibold">รหัสห้องของคุณ: -</p>
+            <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <button onclick="returnToHome()" class="px-5 py-2 bg-red-600 text-white font-bold text-xs rounded-xl shadow cursor-pointer">ยกเลิกห้อง</button>
+        </div>
+
+        <div id="countdown-overlay" class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center p-3 text-center z-40 hidden">
+            <h2 id="countdown-text" class="text-6xl sm:text-9xl font-black text-amber-400 animate-bounce text-stroke-2">3</h2>
+            <p class="text-lg sm:text-2xl text-white font-bold mt-2 text-stroke-1">เตรียมตัวประลองพร้อมกัน!</p>
+        </div>
+
+        <!-- กล่องสรุปผลมุมขวาบน ขนาดกะทัดรัด ไม่บังตัวละคร -->
+        <div id="gameover-overlay" class="absolute top-2 right-2 bg-slate-950/85 border-2 border-amber-500/80 rounded-xl p-2.5 flex flex-col items-center text-center z-30 shadow-2xl hidden max-w-[190px]">
+            <h2 id="winner-text" class="text-base font-black text-amber-400 mb-0.5 text-stroke-1">WINNER!</h2>
+            <p id="winner-sub" class="text-[9px] text-slate-200 mb-2 font-semibold">สุดยอดฝีมือครองแชมป์!</p>
+            <button onclick="returnToHome()" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white font-black text-[11px] rounded-lg border border-white shadow cursor-pointer">🏠 หน้า Lobby</button>
+        </div>
+    </div>
+
+    <!-- CUSTOMIZABLE FREEDOM GAMEPAD PANEL -->
+    <div id="touch-panel" class="w-full max-w-4xl h-36 sm:h-44 bg-slate-900/95 rounded-3xl border-3 border-amber-600/70 shadow-2xl mb-1 relative overflow-hidden">
+        <div id="my-role-badge" class="absolute top-1 left-1/2 transform -translate-x-1/2 bg-amber-500 text-slate-950 px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white z-20">
+            🎮 กำลังเชื่อมต่อ...
+        </div>
+
+        <!-- ปุ่มเปิด/ปิดโหมดจัดวางตำแหน่งปุ่มอิสระ -->
+        <button onclick="toggleEditMode()" id="edit-mode-btn" class="absolute top-1 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow">
+            ⚙️ จัดวางปุ่ม
+        </button>
+
+        <!-- D-PAD / DIRECTION BUTTONS -->
+        <button id="btn-left" class="btn-touch bg-slate-800 active:bg-slate-700 text-2xl font-black rounded-xl border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-16 h-16" style="left: 15px; bottom: 20px;">◀</button>
+        <button id="btn-right" class="btn-touch bg-slate-800 active:bg-slate-700 text-2xl font-black rounded-xl border-2 border-slate-600 text-amber-400 flex items-center justify-center shadow w-16 h-16" style="left: 115px; bottom: 20px;">▶</button>
+        <button id="btn-jump" class="btn-touch bg-amber-600 active:bg-amber-500 text-xl font-black rounded-xl border-2 border-yellow-300 text-white flex items-center justify-center shadow w-16 h-16" style="left: 65px; bottom: 85px;">▲</button>
+        <button id="btn-block" class="btn-touch bg-slate-700 active:bg-slate-600 text-lg font-black rounded-xl border-2 border-slate-400 text-white flex items-center justify-center shadow w-16 h-16" style="left: 65px; bottom: 20px;">🛡️</button>
+
+        <!-- ACTION BUTTONS A, B, C -->
+        <button id="btn-alt-jump" class="btn-touch bg-emerald-600 active:bg-emerald-500 text-xl font-black rounded-full border-3 border-emerald-300 text-white flex items-center justify-center shadow-lg w-20 h-20" style="right: 170px; bottom: 65px;">A</button>
+        <button id="btn-atk" class="btn-touch bg-red-600 active:bg-red-500 text-2xl font-black rounded-full border-4 border-yellow-300 text-white flex items-center justify-center shadow-2xl w-20 h-20" style="right: 90px; bottom: 15px;">B</button>
+        <button id="btn-ult" class="btn-touch bg-slate-800 text-base font-black rounded-full border-3 border-slate-600 text-slate-400 flex items-center justify-center shadow-xl opacity-60 pointer-events-none transition-all w-20 h-20" style="right: 10px; bottom: 65px;">C</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentRoom = '';
+        let myRole = 'p1'; 
+        let gameMode = 'online';
+        let botDifficulty = 'easy';
+        let isMatchReady = true;
+        let isEditMode = false;
+        let finalSlowMoTimer = 0;
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            const onlineBtn = document.getElementById('btn-mode-online');
+            const pveBtn = document.getElementById('btn-mode-pve');
+            const roomInputC = document.getElementById('room-input-container');
+            const botDiffC = document.getElementById('bot-difficulty-container');
+
+            if (mode === 'online') {
+                onlineBtn.className = "px-3.5 py-2 bg-red-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
+                pveBtn.className = "px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer";
+                roomInputC.classList.remove('hidden');
+                botDiffC.classList.add('hidden');
+            } else {
+                pveBtn.className = "px-3.5 py-2 bg-indigo-600 text-white font-black text-xs sm:text-sm rounded-xl border-2 border-yellow-300 shadow-lg cursor-pointer scale-105";
+                onlineBtn.className = "px-3.5 py-2 bg-slate-800 text-slate-400 font-black text-xs sm:text-sm rounded-xl border-2 border-slate-700 shadow cursor-pointer";
+                roomInputC.classList.add('hidden');
+                botDiffC.classList.remove('hidden');
+            }
+        }
+
+        function setDifficulty(level) {
+            botDifficulty = level;
+            ['easy', 'normal', 'hard'].forEach(d => {
+                const btn = document.getElementById(`diff-${d}`);
+                if (d === level) {
+                    btn.style.opacity = '1';
+                    btn.classList.add('ring-2', 'ring-yellow-300');
+                } else {
+                    btn.style.opacity = '0.5';
+                    btn.classList.remove('ring-2', 'ring-yellow-300');
+                }
+            });
+        }
+
+        const controlIds = ['btn-left', 'btn-right', 'btn-jump', 'btn-block', 'btn-alt-jump', 'btn-atk', 'btn-ult'];
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('edit-mode-btn');
+            const ultBtn = document.getElementById('btn-ult');
+
+            controlIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (isEditMode) {
+                    el.classList.add('edit-mode-active');
+                } else {
+                    el.classList.remove('edit-mode-active');
+                    if (id === 'btn-ult') {
+                        let me = (gameMode === 'online' ? (myRole === 'p1' ? p1 : p2) : p1);
+                        if (me.energy < 100) {
+                            ultBtn.classList.add('opacity-60', 'pointer-events-none');
+                            ultBtn.classList.remove('bg-cyan-500', 'text-white', 'border-white', 'ult-ready');
+                            ultBtn.innerText = 'C';
+                        }
+                    }
+                }
+            });
+
+            if (isEditMode) {
+                btn.innerText = "💾 บันทึกตำแหน่ง";
+                btn.className = "absolute top-1 right-2 bg-amber-600 text-white border border-white px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow animate-pulse";
+                ultBtn.classList.remove('pointer-events-none', 'opacity-60');
+            } else {
+                btn.innerText = "⚙️ จัดวางปุ่ม";
+                btn.className = "absolute top-1 right-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[10px] font-black z-35 cursor-pointer shadow";
+                saveButtonPositions();
+            }
+        }
+
+        function saveButtonPositions() {
+            const positions = {};
+            controlIds.forEach(id => {
+                const el = document.getElementById(id);
+                positions[id] = { left: el.style.left, bottom: el.style.bottom };
+            });
+            localStorage.setItem('rooster_btn_pos', JSON.stringify(positions));
+        }
+
+        function loadButtonPositions() {
+            const saved = localStorage.getItem('rooster_btn_pos');
+            if (saved) {
+                const positions = JSON.parse(saved);
+                controlIds.forEach(id => {
+                    if (positions[id]) {
+                        const el = document.getElementById(id);
+                        el.style.left = positions[id].left;
+                        el.style.bottom = positions[id].bottom;
+                        el.style.right = 'auto';
+                    }
+                });
+            }
+        }
+
+        controlIds.forEach(id => {
+            const el = document.getElementById(id);
+            let isDragging = false;
+            let startX, startY;
+            let startLeft, startBottom;
+
+            el.addEventListener('pointerdown', (e) => {
+                if (!isEditMode) return;
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                const panel = document.getElementById('touch-panel');
+                const panelRect = panel.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+
+                startLeft = el.offsetLeft;
+                startBottom = panelRect.height - (el.offsetTop + elRect.height);
+
+                el.style.left = `${startLeft}px`;
+                el.style.bottom = `${startBottom}px`;
+                el.style.right = 'auto';
+
+                el.setPointerCapture(e.pointerId);
+                e.stopPropagation();
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (!isEditMode || !isDragging) return;
+
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                const panel = document.getElementById('touch-panel');
+                const panelRect = panel.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+
+                let newLeft = startLeft + dx;
+                let newBottom = startBottom - dy;
+
+                newLeft = Math.max(0, Math.min(panelRect.width - elRect.width, newLeft));
+                newBottom = Math.max(0, Math.min(panelRect.height - elRect.height, newBottom));
+
+                el.style.left = `${newLeft}px`;
+                el.style.bottom = `${newBottom}px`;
+            });
+
+            el.addEventListener('pointerup', (e) => {
+                isDragging = false;
+            });
+        });
+
+        class AudioSynth {
+            constructor() { this.ctx = null; }
+            init() { 
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') { this.ctx.resume(); }
+            }
+            playPeck() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+            }
+            playSwoosh() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playHit() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+            }
+            playUlt() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.5);
+                gain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.5);
+            }
+            playBlock() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+            }
+        }
+        const audio = new AudioSynth();
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_W = 1024;
+        const CANVAS_H = 576;
+        const GROUND_Y = 460;
+        const GRAVITY = 0.65;
+
+        const keyState = {};
+        window.addEventListener('keydown', (e) => { keyState[e.code] = true; });
+        window.addEventListener('keyup', (e) => { keyState[e.code] = false; });
+
+        const singleInput = { left: false, right: false, jump: false, block: false, attack: false, ultimate: false };
+
+        function bindSingleBtn(btnId, action) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            const setVal = (val) => { 
+                if (!isEditMode) singleInput[action] = val; 
+            };
+            btn.addEventListener('pointerdown', (e) => { e.preventDefault(); setVal(true); });
+            btn.addEventListener('pointerup', (e) => { e.preventDefault(); setVal(false); });
+            btn.addEventListener('pointerleave', (e) => { e.preventDefault(); setVal(false); });
+        }
+
+        bindSingleBtn('btn-left', 'left');
+        bindSingleBtn('btn-right', 'right');
+        bindSingleBtn('btn-jump', 'jump');
+        bindSingleBtn('btn-alt-jump', 'jump');
+        bindSingleBtn('btn-block', 'block');
+        bindSingleBtn('btn-atk', 'attack');
+        bindSingleBtn('btn-ult', 'ultimate');
+
+        class FeatherParticle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 14;
+                this.vy = (Math.random() - 0.7) * 12;
+                this.size = Math.random() * 9 + 5;
+                this.color = color;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.vRot = (Math.random() - 0.5) * 0.4;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.02 + 0.02;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.vy += 0.2; this.vx *= 0.95;
+                this.rotation += this.vRot;
+                this.life -= this.decay;
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size / 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class FloatingText {
+            constructor(x, y, text, color = '#ffeb3b', fontSize = 24) {
+                this.x = x; this.y = y; this.text = text; this.color = color;
+                this.fontSize = fontSize; this.life = 1.0; this.vy = -2.5;
+            }
+            update() { this.y += this.vy; this.life -= 0.025; }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.font = `900 ${this.fontSize}px Kanit`;
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 4;
+                ctx.strokeText(this.text, this.x, this.y);
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        let particles = [];
+        let floatTexts = [];
+        let screenShake = 0;
+
+        function spawnFeathers(x, y, color, count = 12) {
+            for (let i = 0; i < count; i++) particles.push(new FeatherParticle(x, y, color));
+        }
+
+        class Rooster {
+            constructor(id, x, color, facingRight, isBot = false) {
+                this.id = id;
+                this.x = x;
+                this.y = GROUND_Y;
+                this.targetX = x;
+                this.targetY = GROUND_Y;
+                this.vx = 0;
+                this.vy = 0;
+                this.width = 70;
+                this.height = 90;
+                this.color = color;
+                this.facingRight = facingRight;
+                this.isBot = isBot;
+
+                this.hp = 1000;
+                this.maxHp = 1000;
+                this.energy = 0;
+                this.isGrounded = true;
+                this.isBlocking = false;
+
+                this.isAttacking = false;
+                this.isUltimate = false;
+                this.attackType = null;
+                this.attackCooldown = 0;
+                this.hitStun = 0;
+                this.rotation = 0;
+
+                this.comboCount = 0;
+                this.comboResetTimer = 0;
+                this.animTimer = 0;
+                this.beakAnim = 0;
+                this.hasHitOpponent = false;
+                this.isWinner = false;
+            }
+
+            update(opponent) {
+                if (!isMatchReady) return;
+
+                if (gameState === 'GAMEOVER' && this.isWinner) {
+                    this.animTimer += 0.3;
+                    this.rotation = Math.sin(this.animTimer * 2) * 0.2;
+                    if (this.isGrounded && Math.random() < 0.08) {
+                        this.vy = -10;
+                        this.isGrounded = false;
+                    }
+                    this.applyGravity();
+                    return;
+                }
+
+                if (this.isBot && gameState === 'PLAYING') {
+                    this.runAIBot(opponent);
+                }
+
+                if (gameMode === 'online' && this.id !== myRole) {
+                    this.x += (this.targetX - this.x) * 0.3;
+                    this.y += (this.targetY - this.y) * 0.3;
+                } else {
+                    if (this.hitStun > 0) {
+                        this.hitStun--;
+                        this.x += this.vx;
+                        this.vx *= 0.85;
+                        this.applyGravity();
+                        return;
+                    }
+
+                    if (this.comboResetTimer > 0) {
+                        this.comboResetTimer--;
+                        if (this.comboResetTimer === 0) {
+                            this.comboCount = 0;
+                            updateComboUI(this.id, 0);
+                        }
+                    }
+
+                    this.x += this.vx;
+                    this.vx *= 0.82;
+                    this.applyGravity();
+                    this.x = Math.max(40, Math.min(CANVAS_W - 40 - this.width, this.x));
+                }
+
+                if (!this.isAttacking && !this.isUltimate) {
+                    this.facingRight = (this.x < opponent.x);
+                    this.rotation = 0;
+                }
+
+                if (this.attackCooldown > 0) {
+                    this.attackCooldown--;
+                    if (this.isAttacking && !this.hasHitOpponent && (gameMode === 'pve' || this.id === myRole)) {
+                        this.executeHitCheck(opponent);
+                    }
+                } else {
+                    this.isAttacking = false;
+                    this.isUltimate = false;
+                    this.attackType = null;
+                    this.hasHitOpponent = false;
+                }
+
+                this.animTimer += 0.15;
+                if (this.beakAnim > 0) this.beakAnim -= 0.1;
+            }
+
+            runAIBot(opponent) {
+                const dist = opponent.x - this.x;
+                const absDist = Math.abs(dist);
+
+                if (this.energy >= 100 && Math.random() < (botDifficulty === 'hard' ? 0.4 : 0.2)) {
+                    this.triggerUltimate(opponent);
+                    return;
+                }
+
+                let speedMul = botDifficulty === 'easy' ? 0.7 : (botDifficulty === 'normal' ? 1.0 : 1.35);
+                let atkChance = botDifficulty === 'easy' ? 0.03 : (botDifficulty === 'normal' ? 0.08 : 0.18);
+
+                if (absDist > 90) {
+                    this.move((dist > 0 ? 1 : -1) * speedMul);
+                    this.block(false);
+                    if (Math.random() < 0.015 && this.isGrounded) this.jump();
+                } else {
+                    if (Math.random() < atkChance && this.attackCooldown === 0) {
+                        if (Math.random() < 0.4 && this.isGrounded) {
+                            this.jump();
+                            setTimeout(() => this.triggerAttack(), 150);
+                        } else {
+                            this.triggerAttack();
+                        }
+                    } else {
+                        this.move((dist > 0 ? 0.4 : -0.4) * speedMul);
+                    }
+                }
+            }
+
+            applyGravity() {
+                this.y += this.vy;
+                if (this.y < GROUND_Y) {
+                    this.vy += GRAVITY;
+                    this.isGrounded = false;
+                } else {
+                    this.y = GROUND_Y;
+                    this.vy = 0;
+                    this.isGrounded = true;
+                    if (this.attackType !== 'jumpkick' && !this.isUltimate && !this.isWinner) this.rotation = 0;
+                }
+            }
+
+            jump() {
+                if (this.isGrounded && this.hitStun <= 0 && !this.isUltimate) {
+                    this.vy = -14.5;
+                    this.isGrounded = false;
+                    audio.playSwoosh();
+                }
+            }
+
+            move(dir) {
+                if (this.hitStun > 0 || this.isBlocking || this.isUltimate) return;
+                this.vx = dir * 6.5;
+            }
+
+            block(active) {
+                if (this.hitStun <= 0 && this.isGrounded && !this.isAttacking && !this.isUltimate) {
+                    this.isBlocking = active;
+                }
+            }
+
+            triggerAttack() {
+                if (this.attackCooldown > 0 || this.hitStun > 0 || this.isBlocking || this.isUltimate) return;
+
+                this.isAttacking = true;
+                this.hasHitOpponent = false;
+
+                if (!this.isGrounded) {
+                    this.attackType = 'jumpkick';
+                    this.attackCooldown = 22;
+                    this.rotation = this.facingRight ? 0.6 : -0.6;
+                    audio.playSwoosh();
+                    floatTexts.push(new FloatingText(this.x, this.y - 80, 'WING ATTACK!', '#ff9800', 28));
+                } else {
+                    this.attackType = 'peck';
+                    this.attackCooldown = 16;
+                    this.beakAnim = 1.0;
+                    audio.playPeck();
+                }
+            }
+
+            triggerUltimate(opponent) {
+                if (this.energy < 100 || this.attackCooldown > 0 || this.hitStun > 0 || this.isUltimate) return;
+
+                this.energy = 0;
+                updateEnergyUI(this.id, 0);
+
+                this.isUltimate = true;
+                this.isAttacking = true;
+                this.attackType = 'ultimate';
+                this.attackCooldown = 50;
+                this.hasHitOpponent = false;
+
+                audio.playUlt();
+                screenShake = 35;
+
+                const dashDir = this.facingRight ? 1 : -1;
+                this.vx = dashDir * 25;
+                this.vy = -8;
+
+                floatTexts.push(new FloatingText(this.x, this.y - 110, '⚡ พายุเดือยทองเพลิงสะท้านภพ ⚡', '#00ffff', 34));
+            }
+
+            executeHitCheck(opponent) {
+                let hitBox = { x: 0, y: 0, w: 0, h: 0 };
+
+                if (this.attackType === 'ultimate') {
+                    const reachX = this.facingRight ? this.x : this.x - 140;
+                    hitBox = { x: reachX, y: this.y - 105, w: 180, h: 100 };
+                } else if (this.attackType === 'jumpkick') {
+                    const reachX = this.facingRight ? this.x + 10 : this.x - 100;
+                    hitBox = { x: reachX, y: this.y - 95, w: 120, h: 80 };
+                } else {
+                    const reachX = this.facingRight ? this.x + 15 : this.x - 80;
+                    hitBox = { x: reachX, y: this.y - 90, w: 95, h: 60 };
+                }
+
+                if (
+                    hitBox.x < opponent.x + opponent.width &&
+                    hitBox.x + hitBox.w > opponent.x &&
+                    hitBox.y < opponent.y &&
+                    hitBox.y + hitBox.h > opponent.y - opponent.height
+                ) {
+                    this.hasHitOpponent = true;
+                    const isUlt = (this.attackType === 'ultimate');
+                    let dmg = isUlt ? 120 : (this.attackType === 'jumpkick' ? 35 : 15);
+
+                    if (opponent.hp - dmg <= 0) {
+                        finalSlowMoTimer = 40;
+                    }
+
+                    if (gameMode === 'online') {
+                        if (!isUlt) {
+                            this.gainEnergy(25);
+                        }
+                        socket.emit('player-attack', {
+                            roomId: currentRoom,
+                            attackType: this.attackType,
+                            damage: dmg,
+                            attackerEnergy: this.energy,
+                            targetRole: opponent.id
+                        });
+                    } else {
+                        opponent.takeDamage(dmg, this.facingRight ? 18 : -18, this, isUlt, this.attackType === 'jumpkick' || isUlt);
+                        if (!isUlt) {
+                            this.gainEnergy(25);
+                        }
+                        this.registerCombo();
+                    }
+                }
+            }
+
+            takeDamage(amount, knockbackX, attacker, isUlt = false, isHeavy = false) {
+                if (this.isBlocking && !isUlt) {
+                    amount *= 0.2;
+                    knockbackX *= 0.3;
+                    audio.playBlock();
+                    floatTexts.push(new FloatingText(this.x + 10, this.y - 70, 'BLOCK!', '#00e676', 22));
+                } else {
+                    audio.playHit();
+                    this.hitStun = isUlt ? 45 : (isHeavy ? 22 : 12);
+                    screenShake = isUlt ? 25 : 8;
+                    const featherColor = this.color === 'red' ? '#ef4444' : '#3b82f6';
+                    spawnFeathers(this.x + this.width / 2, this.y - 45, featherColor, isUlt ? 35 : 12);
+                    
+                    const hitLabel = isUlt ? `ULTIMATE -${Math.round(amount)}` : (isHeavy ? `CRASH -${Math.round(amount)}` : `-${Math.round(amount)}`);
+                    floatTexts.push(new FloatingText(this.x + 10, this.y - 70, hitLabel, isUlt ? '#00e5ff' : '#ffeb3b', isUlt ? 30 : 22));
+                }
+
+                this.hp = Math.max(0, this.hp - amount);
+                this.vx = knockbackX;
+                updateHealthUI(this.id, this.hp, this.maxHp);
+            }
+
+            gainEnergy(amt) {
+                this.energy = Math.min(100, this.energy + amt);
+                updateEnergyUI(this.id, this.energy);
+            }
+
+            registerCombo() {
+                this.comboCount++;
+                this.comboResetTimer = 85;
+                updateComboUI(this.id, this.comboCount);
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y);
+
+                if (!this.facingRight) ctx.scale(-1, 1);
+                if (this.rotation !== 0) ctx.rotate(this.rotation);
+
+                const bodyColor = this.color === 'red' ? '#dc2626' : '#2563eb';
+                const wingColor = this.color === 'red' ? '#b91c1c' : '#1d4ed8';
+                const wingSpreadColor = this.color === 'red' ? '#f87171' : '#60a5fa';
+
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 32, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (this.isWinner) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 6;
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 20;
+                    ctx.beginPath();
+                    ctx.arc(0, -45, 56 + Math.sin(Date.now() / 100) * 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                } else if (this.energy >= 100) {
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 5;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(0, -45, 52 + Math.sin(Date.now() / 80) * 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
+                const bobY = Math.sin(this.animTimer * 2) * 3;
+                ctx.translate(0, bobY);
+
+                const isJumpWingAttack = (this.attackType === 'jumpkick');
+                
+                ctx.fillStyle = isJumpWingAttack ? wingSpreadColor : wingColor;
+                ctx.beginPath();
+                if (isJumpWingAttack) {
+                    ctx.moveTo(-10, -45);
+                    ctx.quadraticCurveTo(-65, -95, -40, -35);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(0, -45);
+                    ctx.quadraticCurveTo(45, -85, 25, -35);
+                    ctx.fill();
+                } else {
+                    ctx.moveTo(-20, -40);
+                    ctx.quadraticCurveTo(-50, -70, -35, -30);
+                    ctx.fill();
+                }
+
+                ctx.strokeStyle = this.isUltimate ? '#00ffff' : '#d97706';
+                ctx.lineWidth = this.isUltimate ? 10 : 6;
+
+                if (this.isUltimate) {
+                    ctx.beginPath();
+                    ctx.moveTo(10, -20); ctx.lineTo(65, -20);
+                    ctx.lineTo(75, -10);
+                    ctx.stroke();
+                } else if (isJumpWingAttack) {
+                    ctx.beginPath();
+                    ctx.moveTo(5, -20); ctx.lineTo(50, -10); ctx.lineTo(60, -2);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(-10, -15); ctx.lineTo(-12, 0); ctx.lineTo(-18, 0);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(10, -15); ctx.lineTo(12, 0); ctx.lineTo(18, 0);
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = this.isUltimate ? '#00ffff' : bodyColor;
+                ctx.beginPath();
+                ctx.ellipse(0, -40, 26, 30, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillStyle = this.isUltimate ? '#00ffff' : bodyColor;
+                ctx.beginPath();
+                ctx.arc(14, -70, 17, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#b91c1c';
+                ctx.beginPath();
+                ctx.arc(10, -90, 7, 0, Math.PI * 2);
+                ctx.arc(18, -92, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#f59e0b';
+                const reach = this.beakAnim * 14;
+                ctx.beginPath();
+                ctx.moveTo(26, -73); ctx.lineTo(40 + reach, -68); ctx.lineTo(26, -63);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(20, -74, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.arc(22, -74, 2.5, 0, Math.PI * 2); ctx.fill();
+
+                if (this.isBlocking) {
+                    ctx.strokeStyle = '#00e676';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(0, -45, 45, -Math.PI / 3, Math.PI / 3);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        let p1 = new Rooster('p1', 200, 'red', true, false);
+        let p2 = new Rooster('p2', 750, 'blue', false, false);
+
+        function drawArena() {
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+            skyGrad.addColorStop(0, '#020617');
+            skyGrad.addColorStop(0.7, '#0f172a');
+            skyGrad.addColorStop(1, '#1e293b');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+            if (finalSlowMoTimer > 0) {
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+                ctx.lineWidth = 14;
+                ctx.strokeRect(0, 0, CANVAS_W, CANVAS_H);
+            }
+
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+            ctx.beginPath();
+            ctx.arc(CANVAS_W / 2, 80, 220, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(0, GROUND_Y - 90); ctx.lineTo(CANVAS_W, GROUND_Y - 90);
+            ctx.moveTo(0, GROUND_Y - 140); ctx.lineTo(CANVAS_W, GROUND_Y - 140);
+            ctx.stroke();
+
+            const dirtGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
+            dirtGrad.addColorStop(0, '#d97706');
+            dirtGrad.addColorStop(0.3, '#92400e');
+            dirtGrad.addColorStop(1, '#451a03');
+            ctx.fillStyle = dirtGrad;
+            ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+            ctx.fillStyle = '#92400e';
+            ctx.fillRect(20, GROUND_Y - 170, 24, 170);
+            ctx.fillRect(CANVAS_W - 44, GROUND_Y - 170, 24, 170);
+        }
+
+        function updateHealthUI(player, hp, maxHp) {
+            const pct = Math.max(0, (hp / maxHp) * 100);
+            document.getElementById(`${player}-hp`).style.width = `${pct}%`;
+            document.getElementById(`${player}-hp-text`).innerText = `${Math.ceil(hp)} / ${maxHp}`;
+        }
+
+        function updateEnergyUI(player, energy) {
+            const pct = Math.max(0, Math.min(100, energy));
+            document.getElementById(`${player}-sp`).style.width = `${pct}%`;
+            document.getElementById(`${player}-sp-text`).innerText = `SP ${Math.floor(pct)}%`;
+
+            if (player === (gameMode === 'online' ? myRole : 'p1')) {
+                const ultBtn = document.getElementById('btn-ult');
+                if (isEditMode) return;
+
+                if (pct >= 100) {
+                    ultBtn.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-600', 'opacity-60', 'pointer-events-none');
+                    ultBtn.classList.add('bg-cyan-500', 'text-white', 'border-white', 'ult-ready');
+                    ultBtn.innerText = '⚡';
+                } else {
+                    ultBtn.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-600', 'opacity-60', 'pointer-events-none');
+                    ultBtn.classList.remove('bg-cyan-500', 'text-white', 'border-white', 'ult-ready');
+                    ultBtn.innerText = 'C';
+                }
+            }
+        }
+
+        function updateComboUI(player, count) {
+            const el = document.getElementById(`${player}-combo`);
+            if (count > 1) {
+                el.innerText = `COMBO x${count}!`;
+                el.style.opacity = '1';
+            } else {
+                el.style.opacity = '0';
+            }
+        }
+
+        socket.on('assigned-role', (data) => {
+            myRole = data.role;
+            const badge = document.getElementById('my-role-badge');
+            if (myRole === 'p1') {
+                badge.innerText = "🎮 คุณคือ P1 (ไก่แดง)";
+                badge.className = "absolute top-1 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white animate-pulse z-20";
+            } else {
+                badge.innerText = "🎮 คุณคือ P2 (ไก่ฟ้า)";
+                badge.className = "absolute top-1 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-3 py-0.2 rounded-full font-black text-[10px] shadow-md border border-white animate-pulse z-20";
+            }
+        });
+
+        socket.on('update-players', (serverPlayers) => {
+            if (gameMode !== 'online') return;
+            for (let socketId in serverPlayers) {
+                let data = serverPlayers[socketId];
+                let target = (data.role === 'p1') ? p1 : p2;
+                
+                if (target.id !== myRole) {
+                    target.targetX = data.x;
+                    target.targetY = data.y;
+                    target.facingRight = data.facingRight;
+                    target.isBlocking = data.isBlocking;
+                    target.isAttacking = data.isAttacking;
+                    target.isUltimate = data.isUltimate;
+                    target.attackType = data.attackType;
+                }
+                target.hp = data.hp;
+                target.energy = data.energy;
+
+                updateHealthUI(target.id, target.hp, target.maxHp);
+                updateEnergyUI(target.id, target.energy);
+            }
+        });
+
+        socket.on('apply-hit', (data) => {
+            if (gameMode !== 'online') return;
+            let target = (data.targetRole === 'p1') ? p1 : p2;
+            if (target.hp - data.damage <= 0) {
+                finalSlowMoTimer = 40;
+            }
+            target.takeDamage(data.damage, data.targetRole === 'p1' ? 12 : -12, null, data.isUltimate, false);
+        });
+
+        socket.on('show-effect', (data) => {
+            floatTexts.push(new FloatingText(data.x, data.y - 50, `-${data.damage}`, data.isUltimate ? '#00e5ff' : '#ffeb3b', 24));
+        });
+
+        socket.on('room-full', () => {
+            alert('ห้องนี้เต็มแล้ว (มีผู้เล่นครบ 2 คนแล้วครับ)');
+            returnToHome();
+        });
+
+        let lastSendTime = 0;
+        function handleInputs() {
+            if (gameState !== 'PLAYING') return;
+
+            if (gameMode === 'online') {
+                if (!myRole) return;
+                let me = (myRole === 'p1') ? p1 : p2;
+
+                if (keyState['KeyA'] || keyState['ArrowLeft'] || singleInput.left) me.move(-1);
+                if (keyState['KeyD'] || keyState['ArrowRight'] || singleInput.right) me.move(1);
+                if (keyState['KeyW'] || keyState['ArrowUp'] || singleInput.jump) me.jump();
+                
+                me.block(keyState['KeyS'] || keyState['ArrowDown'] || singleInput.block);
+                
+                if (keyState['KeyF'] || keyState['KeyK'] || singleInput.attack) me.triggerAttack();
+                if (keyState['KeyR'] || keyState['ShiftRight'] || singleInput.ultimate) {
+                    let opponent = (myRole === 'p1') ? p2 : p1;
+                    me.triggerUltimate(opponent);
+                }
+
+                let now = Date.now();
+                if (now - lastSendTime > 25) {
+                    socket.emit('player-action', {
+                        roomId: currentRoom,
+                        x: me.x,
+                        y: me.y,
+                        hp: me.hp,
+                        energy: me.energy,
+                        facingRight: me.facingRight,
+                        isBlocking: me.isBlocking,
+                        isAttacking: me.isAttacking,
+                        isUltimate: me.isUltimate,
+                        attackType: me.attackType
+                    });
+                    lastSendTime = now;
+                }
+            } else {
+                if (keyState['KeyA'] || singleInput.left) p1.move(-1);
+                if (keyState['KeyD'] || singleInput.right) p1.move(1);
+                if (keyState['KeyW'] || singleInput.jump) p1.jump();
+                p1.block(keyState['KeyS'] || singleInput.block);
+                if (keyState['KeyF'] || singleInput.attack) p1.triggerAttack();
+                if (keyState['KeyR'] || singleInput.ultimate) p1.triggerUltimate(p2);
+            }
+        }
+
+        let gameState = 'MENU';
+        let matchTimer = 60;
+        let timerId = null;
+
+        function startMatch() {
+            audio.init();
+
+            const roomInput = document.getElementById('room-input').value.trim();
+            if (gameMode === 'online' && !roomInput) {
+                alert('กรุณากรอกรหัสห้องก่อนครับ!');
+                return;
+            }
+
+            currentRoom = roomInput || 'bot-room';
+            isMatchReady = true;
+
+            document.getElementById('lobby-screen').classList.add('hidden');
+            document.getElementById('gameover-overlay').classList.add('hidden');
+
+            const isBotMode = (gameMode === 'pve');
+            p1.x = 200; p1.y = GROUND_Y; p1.hp = 1000; p1.maxHp = 1000; p1.energy = 0; p1.isWinner = false;
+            p2.x = 750; p2.y = GROUND_Y; p2.hp = 1000; p2.maxHp = 1000; p2.energy = 0; p2.isWinner = false;
+            p2.isBot = isBotMode;
+
+            updateHealthUI('p1', 1000, 1000);
+            updateHealthUI('p2', 1000, 1000);
+            updateEnergyUI('p1', 0);
+            updateEnergyUI('p2', 0);
+
+            particles = []; floatTexts = [];
+            matchTimer = 60;
+            document.getElementById('timer').innerText = matchTimer;
+            gameState = 'PLAYING';
+
+            if (gameMode === 'online') {
+                document.getElementById('room-code-display').innerText = `รหัสห้องของคุณ: ${currentRoom}`;
+                document.getElementById('waiting-overlay').classList.remove('hidden');
+                socket.emit('join-room', currentRoom);
+            } else {
+                startTimer();
+                document.getElementById('my-role-badge').innerText = "🎮 เล่นกับ AI (P1)";
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                if (gameState === 'PLAYING' && isMatchReady) {
+                    matchTimer--;
+                    document.getElementById('timer').innerText = matchTimer;
+                    if (matchTimer <= 0) endGame();
+                }
+            }, 1000);
+        }
+
+        socket.on('start-countdown', () => {
+            document.getElementById('waiting-overlay').classList.add('hidden');
+            document.getElementById('countdown-overlay').classList.remove('hidden');
+            
+            let count = 3;
+            const countText = document.getElementById('countdown-text');
+            countText.innerText = count;
+
+            let cdTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countText.innerText = count;
+                } else if (count === 0) {
+                    countText.innerText = 'FIGHT! ⚔️';
+                } else {
+                    clearInterval(cdTimer);
+                    document.getElementById('countdown-overlay').classList.add('hidden');
+                    isMatchReady = true;
+                    startTimer();
+                }
+            }, 1000);
+        });
+
+        function returnToHome() {
+            clearInterval(timerId);
+            gameState = 'MENU';
+            isMatchReady = true;
+            document.getElementById('waiting-overlay').classList.add('hidden');
+            document.getElementById('countdown-overlay').classList.add('hidden');
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            document.getElementById('lobby-screen').classList.remove('hidden');
+            if (gameMode === 'online') location.reload();
+        }
+
+        function endGame() {
+            gameState = 'GAMEOVER';
+            clearInterval(timerId);
+
+            const title = document.getElementById('winner-text');
+            const sub = document.getElementById('winner-sub');
+
+            if (p1.hp > p2.hp) {
+                p1.isWinner = true;
+                title.innerText = '🔴 P1 (ไก่แดง) WIN!';
+                sub.innerText = 'สุดยอดฝีมือครองแชมป์!';
+                spawnFeathers(CANVAS_W / 2, CANVAS_H / 2, '#ef4444', 40);
+            } else if (p2.hp > p1.hp) {
+                p2.isWinner = true;
+                title.innerText = gameMode === 'pve' ? '🤖 AI BOT WIN!' : '🔵 P2 (ไก่ฟ้า) WIN!';
+                sub.innerText = gameMode === 'pve' ? 'บอทคอมพิวเตอร์เฉียบคมกว่า!' : 'ไก่ฟ้าคว้าชัยเหนือสังเวียน!';
+                spawnFeathers(CANVAS_W / 2, CANVAS_H / 2, '#3b82f6', 40);
+            } else {
+                title.innerText = '🤝 เสมอกัน!';
+                sub.innerText = 'ฝีมือสูสีไม่มีใครยอมใคร!';
+            }
+
+            document.getElementById('gameover-overlay').classList.remove('hidden');
+        }
+
+        function gameLoop() {
+            ctx.save();
+
+            if (finalSlowMoTimer > 0) {
+                finalSlowMoTimer--;
+                if (finalSlowMoTimer % 4 !== 0) {
+                    requestAnimationFrame(gameLoop);
+                    ctx.restore();
+                    return;
+                }
+            }
+
+            if (screenShake > 0) {
+                const shakeX = (Math.random() - 0.5) * screenShake;
+                const shakeY = (Math.random() - 0.5) * screenShake;
+                ctx.translate(shakeX, shakeY);
+                screenShake *= 0.9;
+                if (screenShake < 0.5) screenShake = 0;
+            }
+
+            ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+            drawArena();
+            handleInputs();
+
+            p1.update(p2);
+            p2.update(p1);
+
+            if (gameState === 'PLAYING' && isMatchReady && (p1.hp <= 0 || p2.hp <= 0)) {
+                endGame();
+            }
+
+            p1.draw(ctx);
+            p2.draw(ctx);
+
+            particles.forEach((p, idx) => {
+                p.update(); p.draw(ctx);
+                if (p.life <= 0) particles.splice(idx, 1);
+            });
+
+            floatTexts.forEach((txt, idx) => {
+                txt.update(); txt.draw(ctx);
+                if (txt.life <= 0) floatTexts.splice(idx, 1);
+            });
+
+            ctx.restore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = () => {
+            setGameMode('online');
+            setDifficulty('easy');
+            loadButtonPositions();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
